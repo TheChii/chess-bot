@@ -1,6 +1,0 @@
-# depslib dependency file v1.0
-1702153398 source:c:\users\theo\desktop\winclean\l0v\main.cpp
-	<iostream>
-	<unordered_map>
-	<string.h>
-
