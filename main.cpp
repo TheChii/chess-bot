@@ -82,7 +82,8 @@ typedef struct piece{
 } piece;
 
 piece attacking[8][8][20];
-
+piece defending[8][8][20];
+//protecting[a][b][20];
 
 void add_attack(int a, int b, int c, int d){
     for(int k=0;k<20;k++){
@@ -105,6 +106,29 @@ void show_attacks(){
     }
 }
 
+
+
+void add_defending(int a, int b, int c, int d){
+    for(int k=0;k<20;k++){
+            if(defending[a][b][k].line == -1){
+                defending[a][b][k].line = c;
+                defending[a][b][k].row = d;
+                break;
+            }
+    }
+}
+
+void show_defendings(){
+    for(int i=0;i<8;i++){
+            for(int j=0;j<8;j++){
+                for(int k=0;k<20;k++){
+                    if(defending[i][j][k].line == -1) break;
+                    cout<<"Piece at: "<<i<<" "<<j<<" is defending the piece at: "<<defending[i][j][k].line<<" "<<defending[i][j][k].row<<endl;
+                }
+            }
+    }
+}
+
 int calculate_attacks(){
     for(int i=0;i<8;i++)
     {
@@ -114,18 +138,34 @@ int calculate_attacks(){
             if(board[i][j] == PAWN){
                 if(colors[i][j] == BLACK)
                 {
+                    //if(((j+1)<8 && i+1<8) && colors[i+1][j+1])) add_attack(i,j, i+1, j+1);
+                    //if(((j-1)>=0 && i+1<8) && (!same_color(i,j,i+1,j-1) && colors[i+1][j-1])) add_attack(i,j, i+1, j-1);
 
+                     if(((j+1)<8 && i+1<8) && colors[i+1][j+1]){
+                        if(!same_color(i,j,i+1,j+1)) add_attack(i,j, i+1, j+1);
+                        else add_defending(i,j,i+1,j+1);
+                     }
 
-                    if(((j+1)<8 && i+1<8) && (!same_color(i,j,i+1,j+1) && colors[i+1][j+1])) add_attack(i,j, i+1, j+1);
-                    if(((j-1)>=0 && i+1<8) && (!same_color(i,j,i+1,j-1) && colors[i+1][j-1])) add_attack(i,j, i+1, j-1);
+                     if(((j-1)>=0 && i+1<8)&& colors[i+1][j-1]){
+                        if(!same_color(i,j,i+1,j-1)) add_attack(i,j, i+1, j-1);
+                        else add_defending(i,j, i+1, j-1);
+                     }
                 }
 
                 if(colors[i][j] == WHITE)
                 {
+                    //if(((j+1)<8 && i-1 >= 0) && (!same_color(i, j, i-1, j+1) && colors[i-1][j+1])) add_attack(i,j,i-1,j+1);
+                    //if(((j-1)>=0 && i-1 >= 0) && (!same_color(i,j,i-1, j-1)&& colors[i-1][j-1])) add_attack(i,j,i-1,j-1);
 
+                    if(((j+1)<8 && i-1 >= 0) && colors[i-1][j+1]){
+                        if(!same_color(i, j, i-1, j+1)) add_attack(i,j,i-1,j+1);
+                        else add_defending(i,j,i-1,j+1);
+                    }
 
-                    if(((j+1)<8 && i-1 >= 0) && (!same_color(i, j, i-1, j+1) && colors[i-1][j+1])) add_attack(i,j,i-1,j+1);
-                    if(((j-1)>=0 && i-1 >= 0) && (!same_color(i,j,i-1, j-1)&& colors[i-1][j-1])) add_attack(i,j,i-1,j-1);
+                    if(((j-1)>=0 && i-1 >= 0) && colors[i-1][j-1]){
+                        if(!same_color(i,j,i-1, j-1)) add_attack(i,j,i-1,j-1);
+                        else add_defending(i,j,i-1,j-1);
+                    }
                 }
             }
 
@@ -138,6 +178,7 @@ int calculate_attacks(){
                     {
                         if(!same_color(i,j,k,j))
                             add_attack(i,j,k,j);
+                        else add_defending(i,j,k,j);
                         break;
                     }
                 }
@@ -148,6 +189,7 @@ int calculate_attacks(){
                     {
                         if(!same_color(i,j,k,j))
                             add_attack(i,j,k,j);
+                        else add_defending(i,j,k,j);
                         break;
                     }
                 }
@@ -158,6 +200,7 @@ int calculate_attacks(){
                     {
                         if(!same_color(i,j,i,k))
                             add_attack(i,j,i,k);
+                        else add_defending(i,j,i,k);
                         break;
                     }
                 }
@@ -168,6 +211,7 @@ int calculate_attacks(){
                     {
                         if(!same_color(i,j,i,k))
                             add_attack(i,j,i,k);
+                        else add_defending(i,j,i,k);
                         break;
                     }
                 }
@@ -183,6 +227,7 @@ int calculate_attacks(){
                     if(colors[i-k][j-k]){
                         if(!same_color(i,j,i-k,j-k))
                             add_attack(i,j,i-k,j-k);
+                        else add_defending(i,j,i-k,j-k);
                         break;
                     }
                 }
@@ -192,6 +237,7 @@ int calculate_attacks(){
                     if(colors[i+k][j+k]){
                         if(!same_color(i,j,i+k,j+k))
                             add_attack(i,j,i+k,j+k);
+                        else add_defending(i,j,i+k,j+k);
                         break;
                     }
                 }
@@ -201,6 +247,7 @@ int calculate_attacks(){
                     if(colors[i+k][j-k]){
                         if(!same_color(i,j,i+k,j-k))
                             add_attack(i,j,i+k,j-k);
+                        else add_defending(i,j,i+k,j-k);
                         break;
                     }
                 }
@@ -210,6 +257,7 @@ int calculate_attacks(){
                     if(colors[i-k][j+k]){
                         if(!same_color(i,j,i-k,j+k))
                             add_attack(i,j,i-k,j+k);
+                        else add_defending(i,j,i-k,j+k);
                         break;
                     }
                 }
@@ -222,24 +270,28 @@ int calculate_attacks(){
                 {
                     if(!same_color(i,j,i-2,j-1))
                         add_attack(i,j,i-2,j-1);
+                    else add_defending(i,j,i-2,j-1);
                 }
 
                 if(i-2>=0 && j+1<8 && colors[i-2][j+1])
                 {
                     if(!same_color(i,j,i-2,j+1))
                         add_attack(i,j,i-2,j+1);
+                    else add_defending(i,j,i-2,j+1);
                 }
 
                 if(i+2<8 && j-1>=0 && colors[i+2][j-1])
                 {
                     if(!same_color(i,j,i+2, j-1))
                         add_attack(i,j,i+2, j-1);
+                    else add_defending(i,j,i+2, j-1);
                 }
 
                 if(i+2<8 && j+1<8 && colors[i+2][j+1])
                 {
                     if(!same_color(i,j,i+2, j+1))
                         add_attack(i,j,i+2,j+1);
+                    else add_defending(i,j,i+2,j+1);
                 }
             }
         }
@@ -250,4 +302,6 @@ int calculate_attacks(){
 int main(){
     calculate_attacks();
     show_attacks();
+    cout<<endl;
+    show_defendings();
 }
