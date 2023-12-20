@@ -113,25 +113,34 @@ func PawnMoves(board [8][8]Piece, row, col, rowdif int) []([8][8]Piece) {
 	var boards []([8][8]Piece)
 	if row+rowdif >= 0 && row+rowdif <= 7 && board[row + rowdif][col].value == 0 {
 		newBoard := MakeMove(board, row, col, row+rowdif, col)
-		boards = append(boards, newBoard)
+		if !IsInCheck(newBoard, GetColor(board, row, col)){
+			boards = append(boards, newBoard)
+		}
 	}
 	supposed_row := 1
 	if rowdif < 0 {
 		supposed_row = 6
 	}
-	if row + 2*rowdif >= 0 && row + 2 * rowdif <= 7 && board[row + 2*rowdif][col].value == 0 && row == supposed_row {
+	if row + 2*rowdif >= 0 && row + 2 * rowdif <= 7 && board[row + 2*rowdif][col].value == 0 && row == supposed_row && board[row+rowdif][col].value == 0{
 		newBoard := MakeMove(board, row, col, row+ 2 * rowdif, col)
-		boards = append(boards, newBoard)
+		if !IsInCheck(newBoard, GetColor(board, row, col)){
+			boards = append(boards, newBoard)
+		}
 	}
+	
 	if row+rowdif >= 0 && row+rowdif <= 7 && col-1 >= 0 && board[row+rowdif][col-1].color != board[row][col].color && board[row+rowdif][col-1].value != 0 {
 		// Create a copy of the board and make the move
 		newBoard := MakeMove(board, row, col, row+rowdif, col-1)
-		boards = append(boards, newBoard)
+		if !IsInCheck(newBoard, GetColor(board, row, col)){
+			boards = append(boards, newBoard)
+		}
 	}
 	if row+rowdif >= 0 && row+rowdif <= 7 && col+1 <= 7 && board[row+rowdif][col+1].color != board[row][col].color && board[row+rowdif][col+1].value != 0{
 		// Create a copy of the board and make the move
 		newBoard := MakeMove(board, row, col, row+rowdif, col+1)
-		boards = append(boards, newBoard)
+		if !IsInCheck(newBoard, GetColor(board, row, col)){
+			boards = append(boards, newBoard)
+		}
 	}
 
 	return boards
@@ -154,7 +163,9 @@ func KnightMoves(board [8][8]Piece, row, col int) []([8][8]Piece) {
 			if board[newRow][newCol].color == "" || board[newRow][newCol].color != board[row][col].color {
 				// Create a copy of the board and make the move
 				newBoard := MakeMove(board, row, col, newRow, newCol)
-				boards = append(boards, newBoard)
+				if !IsInCheck(newBoard, GetColor(board, row, col)){
+					boards = append(boards, newBoard)
+				}
 			}
 		}
 	}
@@ -182,12 +193,16 @@ func BishopMoves(board [8][8]Piece, row, col int) []([8][8]Piece) {
 			if board[newRow][newCol].color == "None" {
 				// Create a copy of the board and make the move
 				newBoard := MakeMove(board, row, col, newRow, newCol)
-				boards = append(boards, newBoard)
+				if !IsInCheck(newBoard, GetColor(board, row, col)){
+					boards = append(boards, newBoard)
+				}
 			} else {
 				if board[newRow][newCol].color != board[row][col].color && board[newRow][newCol].name != "k" {
 					// Create a copy of the board and make the move
 					newBoard := MakeMove(board, row, col, newRow, newCol)
-					boards = append(boards, newBoard)
+					if !IsInCheck(newBoard, GetColor(board, row, col)){
+						boards = append(boards, newBoard)
+					}
 				}
 				break
 			}
@@ -196,7 +211,6 @@ func BishopMoves(board [8][8]Piece, row, col int) []([8][8]Piece) {
 
 	return boards
 }
-
 func RookMoves(board [8][8]Piece, row, col int) []([8][8]Piece) {
 	var boards []([8][8]Piece)
 	rookMoves := [][]int{
@@ -214,24 +228,29 @@ func RookMoves(board [8][8]Piece, row, col int) []([8][8]Piece) {
 				break
 			}
 
-			if board[newRow][newCol].color == "" {
+			// Allow rook to continue scanning even if it encounters a piece
+			if board[newRow][newCol].color == "" || board[newRow][newCol].value == 0 {
 				// Create a copy of the board and make the move
 				newBoard := MakeMove(board, row, col, newRow, newCol)
-				boards = append(boards, newBoard)
-			} else {
-				if board[newRow][newCol].color == board[row][col].color || board[newRow][newCol].name == "k" {
-					break
-				} else {
-					// Create a copy of the board and make the move
-					newBoard := MakeMove(board, row, col, newRow, newCol)
+				if !IsInCheck(newBoard, GetColor(board, row, col)){
 					boards = append(boards, newBoard)
 				}
+			} else if board[newRow][newCol].color != board[row][col].color {
+				// Capture opponent's piece, then break
+				newBoard := MakeMove(board, row, col, newRow, newCol)
+				if !IsInCheck(newBoard, GetColor(board, row, col)){
+					boards = append(boards, newBoard)
+				}
+				break
+			} else {
+				break // Friendly piece blocking the path
 			}
 		}
 	}
 
 	return boards
 }
+
 
 func QueenMoves(board [8][8]Piece, row, col int) []([8][8]Piece) {
 	var boards []([8][8]Piece)
@@ -257,16 +276,40 @@ func KingMoves(board [8][8]Piece, row, col int) []([8][8]Piece) {
 		{1, -1}, {1, 0}, {1, 1},
 	}
 
+	// Get the color of the king
+	kingColor := board[row][col].color
+
 	for _, move := range kingMoves {
 		newRow, newCol := row+move[0], col+move[1]
 		if newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8 {
-			if board[newRow][newCol].name == "None" || board[newRow][newCol].color != board[row][col].color {
-				// Create a copy of the board and make the move
+			if board[newRow][newCol].name == "None" || board[newRow][newCol].color != kingColor {
+	
 				newBoard := MakeMove(board, row, col, newRow, newCol)
-				boards = append(boards, newBoard)
+
+				if !IsInCheck(newBoard, GetColor(board, row, col)) {
+					boards = append(boards, newBoard)
+				}
+				
 			}
 		}
 	}
+
 	return boards
 }
 
+// Helper function to find the position of the king on the board
+func FindKing(board [8][8]Piece, color string) [2]int {
+	var kingPos [2]int
+
+	for i, row := range board {
+		for j, piece := range row {
+			if (piece.name == "K" && color == "white") || (piece.name == "k" && color == "black") {
+				kingPos[0], kingPos[1] = i, j
+				return kingPos
+			}
+		}
+	}
+
+	// Return an invalid position if the king is not found
+	return [2]int{-1, -1}
+}

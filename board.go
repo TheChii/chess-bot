@@ -27,7 +27,12 @@ func PrintBoard(board [8][8]Piece) {
 		fmt.Println("")
 	}
 }
-
+func GetColor(board [8][8]Piece, row, col int)int {
+	if(board[row][col].color == "white"){
+		return -1
+	}
+	return 1
+}
 func ConvertPGN(board [8][8]Piece, fen string) [8][8]Piece {
 	values := map[string]int{
 		"p": 1,
@@ -49,6 +54,9 @@ func ConvertPGN(board [8][8]Piece, fen string) [8][8]Piece {
 	for _, character := range fen {
 		char := string(character)
 
+		if char == " "{
+			break
+		}
 		if char == "/" || j == 8 {
 			i++
 			j = 0
@@ -78,5 +86,8 @@ func ConvertPGN(board [8][8]Piece, fen string) [8][8]Piece {
 	return board
 }
 func ExampleBoard() string {
-	return "rn2kb1r/pb3p1p/2p2p2/1q1p4/1P1P4/2P5/4PPPP/RN1QKBNR"
+	return "r1bqkb1r/ppp2ppp/2n5/3np3/8/2NP1N2/PPP2PPP/R1BQKB1R"
 }
+
+
+//rn6/1p3k2/3p2p1/p4b1p/P1Pp4/8/1P3qPP/R2Q3K
